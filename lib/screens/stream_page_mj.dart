@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:eight/resources/constants.dart';
 import 'package:eight/screens/size_config.dart';
 import 'package:eight/src/utils/settings.dart';
@@ -7,10 +8,14 @@ import 'package:agora_rtc_engine/rtc_engine.dart';
 class StreamPageMJ extends StatefulWidget {
   /// non-modifiable channel name of the page
   final String channelName;
+  final String image;
+
   /// non-modifiable client role of the page
   final ClientRole role;
+
   /// Creates a call page with given channel name.
-  const StreamPageMJ({Key key, this.channelName, this.role}) : super(key: key);
+  const StreamPageMJ({Key key, this.channelName, this.role, this.image})
+      : super(key: key);
 
   @override
   _StreamPageMJState createState() => _StreamPageMJState();
@@ -19,7 +24,7 @@ class StreamPageMJ extends StatefulWidget {
 class _StreamPageMJState extends State<StreamPageMJ> {
   final _users = <int>[];
   final _infoStrings = <String>[];
-  bool muted = false;
+  bool muted = true;
   RtcEngine _engine;
 
   @override
@@ -52,6 +57,7 @@ class _StreamPageMJState extends State<StreamPageMJ> {
 
     await _initAgoraRtcEngine();
     _addAgoraEventHandlers();
+    await _engine.enableAudio();
     await _engine.enableWebSdkInteroperability(true);
     await _engine.joinChannel(Token, widget.channelName, null, 0);
   }
@@ -59,7 +65,6 @@ class _StreamPageMJState extends State<StreamPageMJ> {
   /// Create agora sdk instance and initialize
   Future<void> _initAgoraRtcEngine() async {
     _engine = await RtcEngine.create(APP_ID);
-    // await _engine.enableVideo();
     await _engine.setChannelProfile(ChannelProfile.LiveBroadcasting);
     await _engine.setClientRole(widget.role);
   }
@@ -115,84 +120,134 @@ class _StreamPageMJState extends State<StreamPageMJ> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    return Scaffold(
-      backgroundColor: kPrimaryBrownColor,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        onPressed: _onToggleMute,
-        backgroundColor: Colors.grey,
-        tooltip: 'Mike',
-        child:
-        Container(
-          width: 80,
-            height: 80,
-            child: Icon(
-              muted ? Icons.mic_off : Icons.mic,
-              color: muted ? Colors.white : Colors.blueAccent,
-              size: 20.0,
-            )
+    return Container(
+      width: SizeConfig.screenWidth,
+      height: SizeConfig.screenHeight,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          colorFilter: new ColorFilter.mode(
+              Colors.black.withOpacity(0.4), BlendMode.dstATop),
+          image: NetworkImage(widget.image),
+          fit: BoxFit.fill,
         ),
-        elevation: 8.0,
       ),
-      bottomNavigationBar: BottomAppBar(
-          color: Colors.grey,
-          shape: CircularNotchedRectangle(),
-          child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: <Widget>[
-                IconButton(
-                    icon: Icon(Icons.chat_rounded, color: Colors.white,),
-                    onPressed: (){}
-                ),
-                IconButton(
-                    icon: Icon(Icons.menu_rounded, color: Colors.white,),
-                    onPressed: () => _onCallEnd(context)
-                ),
-              ]
-          )
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: 40,),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    IconButton(icon: Icon(Icons.navigate_before_rounded), color: Colors.white, iconSize: 40, onPressed: (){
-                      Navigator.of(context).pop();
-                    }),
-                  ],
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Column(
-                      children: [
-                        Text("MJ Yo!", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),),
-                        Text("130 viewers", style: TextStyle(color: Colors.yellow, fontSize: 15, fontWeight: FontWeight.w600),),
-                        SizedBox(height: 10,)
-                      ],
-                    ),
-                    SizedBox(width: 15,),
-                    Container(
-                      height: SizeConfig.screenHeight * 0.15,
-                      width: SizeConfig.screenHeight * 0.15,
-                      decoration: BoxDecoration(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: FloatingActionButton(
+          onPressed: _onToggleMute,
+          backgroundColor: Colors.grey,
+          tooltip: 'Mike',
+          child: Container(
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(30)),
+            child: Padding(
+              padding: EdgeInsets.all(15),
+              child: Container(
+                decoration: BoxDecoration(
+                    color: muted ? Colors.green : Colors.red,
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ),
+          // Container(
+          //     width: 80,
+          //     height: 80,
+          //     child: Icon(
+          //       muted ? Icons.mic_off : Icons.mic,
+          //       color: muted ? Colors.white : Colors.blueAccent,
+          //       size: 20.0,
+          //     )),
+          elevation: 8.0,
+        ),
+        bottomNavigationBar: widget.role == ClientRole.Audience
+            ? Container()
+            : BottomAppBar(
+                color: Colors.grey,
+                shape: CircularNotchedRectangle(),
+                child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: <Widget>[
+                      IconButton(
+                          icon: Icon(
+                            Icons.chat_rounded,
+                            color: Colors.white,
+                          ),
+                          onPressed: () {}),
+                      IconButton(
+                          icon: Icon(
+                            Icons.menu_rounded,
+                            color: Colors.white,
+                          ),
+                          onPressed: () => _onCallEnd(context)),
+                    ])),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              SizedBox(
+                height: 40,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      IconButton(
+                          icon: Icon(Icons.navigate_before_rounded),
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(10)),
-                    ),
-                    SizedBox(width: 30,),
-                  ],
-                ),
-              ],
-            )
-          ],
+                          iconSize: 40,
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          }),
+                    ],
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Column(
+                        children: [
+                          Text(
+                            "MJ Yo!",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700),
+                          ),
+                          Text(
+                            "130 viewers",
+                            style: TextStyle(
+                                color: Colors.yellow,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          )
+                        ],
+                      ),
+                      SizedBox(
+                        width: 15,
+                      ),
+                      Container(
+                        height: SizeConfig.screenHeight * 0.15,
+                        width: SizeConfig.screenHeight * 0.15,
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      SizedBox(
+                        width: 30,
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );

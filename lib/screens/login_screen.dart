@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eight/resources/constants.dart';
 import 'package:eight/screens/home_screen.dart';
 import 'package:eight/screens/size_config.dart';
@@ -55,6 +56,15 @@ class _LoginScreenState extends State<LoginScreen> {
     print(otp);
     PhoneAuthProvider.credential(verificationId: _verificationId, smsCode: otp);
     prefs.setString("phone", contactController.text.trim());
+    FirebaseFirestore.instance
+        .collection("users")
+        .doc(contactController.text.trim())
+        .set({
+      "contact": contactController.text.trim(),
+      "username": "",
+      "followers": "",
+      "channels": []
+    });
     Navigator.of(context)
         .pushReplacement(MaterialPageRoute(builder: (context) => HomeScreen()));
   }
@@ -65,19 +75,8 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Container(
         width: double.infinity,
-        decoration: BoxDecoration(color: kPrimaryPinkColor
-            // gradient: LinearGradient(
-            //     begin: Alignment.topCenter,
-            //     colors: [
-            //       Colors.orange[900],
-            //       Colors.orange[800],
-            //       Colors.orange[400]
-            //     ]
-            // )
-            ),
+        decoration: BoxDecoration(color: kPrimaryYellowColor),
         child: Stack(
-          // crossAxisAlignment: CrossAxisAlignment.start,
-          // mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[
             Positioned(
               bottom: 0,

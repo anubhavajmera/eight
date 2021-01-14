@@ -1,6 +1,9 @@
+import 'package:eight/providers/userProvider.dart';
+import 'package:eight/screens/invite_friends_screen.dart';
 import 'package:eight/screens/stream_page_mj.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
@@ -14,7 +17,9 @@ void main() async {
   if (phone == null || phone.isEmpty) {
     initialRoute = "/login";
   }
-  runApp(MyApp(initialRoute: initialRoute));
+  runApp(
+    MyApp(initialRoute: initialRoute),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -34,7 +39,8 @@ class MyApp extends StatelessWidget {
       routes: {
         "/home": (context) => HomeScreen(),
         "/login": (context) => LoginScreen(),
-        "/stream_mj": (context) => StreamPageMJ()
+        "/stream_mj": (context) => StreamPageMJ(),
+        "/invite": (context) => InviteFriendsScreen()
       },
     );
   }

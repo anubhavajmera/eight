@@ -1,15 +1,17 @@
 import 'dart:async';
 import 'package:agora_rtc_engine/rtc_engine.dart';
-import 'package:agora_rtc_engine/rtc_local_view.dart' as RtcLocalView;
-import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
+// import 'package:agora_rtc_engine/rtc_local_view.dart' as RtcLocalView;
+// import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
 import 'package:flutter/material.dart';
 import '../utils/settings.dart';
 
 class CallPage extends StatefulWidget {
   /// non-modifiable channel name of the page
   final String channelName;
+
   /// non-modifiable client role of the page
   final ClientRole role;
+
   /// Creates a call page with given channel name.
   const CallPage({Key key, this.channelName, this.role}) : super(key: key);
 
@@ -54,16 +56,16 @@ class _CallPageState extends State<CallPage> {
     await _initAgoraRtcEngine();
     _addAgoraEventHandlers();
     await _engine.enableWebSdkInteroperability(true);
-   // VideoEncoderConfiguration configuration = VideoEncoderConfiguration();
-   // configuration.dimensions = VideoDimensions(1920, 1080);
-   // await _engine.setVideoEncoderConfiguration(configuration);
+    // VideoEncoderConfiguration configuration = VideoEncoderConfiguration();
+    // configuration.dimensions = VideoDimensions(1920, 1080);
+    // await _engine.setVideoEncoderConfiguration(configuration);
     await _engine.joinChannel(Token, widget.channelName, null, 0);
   }
 
   /// Create agora sdk instance and initialize
   Future<void> _initAgoraRtcEngine() async {
     _engine = await RtcEngine.create(APP_ID);
-   // await _engine.enableVideo();
+    // await _engine.enableVideo();
     await _engine.setChannelProfile(ChannelProfile.LiveBroadcasting);
     await _engine.setClientRole(widget.role);
   }
